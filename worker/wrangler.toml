@@ -1,0 +1,6 @@
+name = "catalina-codex-worker"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Set SHEET_ID as a secret: wrangler secret put SHEET_ID

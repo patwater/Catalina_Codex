@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-parchment font-sans text-gray-800;
+  }
+
+  h1, h2, h3 {
+    @apply font-handwritten;
+  }
+}
+
+@layer components {
+  .polaroid {
+    @apply bg-white p-2 pb-8 shadow-md;
+  }
+
+  .btn-primary {
+    @apply bg-ocean text-white px-6 py-2 rounded-full font-semibold hover:bg-ocean-dark transition-colors;
+  }
+
+  .section-title {
+    @apply font-handwritten text-4xl text-ocean mb-6;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #fdf6e3;
+}
+::-webkit-scrollbar-thumb {
+  background: #0077be55;
+  border-radius: 4px;
+}
