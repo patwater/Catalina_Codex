@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 
+const SURVEY_FORM =
+  'https://docs.google.com/forms/d/e/1FAIpQLSf-0I7ghEKe_GNUF1yvZOZzRNrI7kJYe7FG_y7AUCVftST_Qg/viewform?usp=header'
+
 function WallOfQuotes({ quotes }) {
   const [current, setCurrent] = useState(0)
 
@@ -25,11 +28,13 @@ function WallOfQuotes({ quotes }) {
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`w-2.5 h-2.5 rounded-full transition-colors ${i === current ? 'bg-ocean' : 'bg-gray-300'}`}
+            className={`w-2.5 h-2.5 rounded-full transition-colors ${
+              i === current ? 'bg-ocean' : 'bg-gray-300'
+            }`}
           />
         ))}
       </div>
-      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }`}</style>
     </div>
   )
 }
@@ -38,6 +43,16 @@ export default function SurveyDashboard({ survey }) {
   return (
     <section id="survey">
       <WallOfQuotes quotes={survey.quotes} />
+      <div className="mt-6 text-center">
+        <a
+          href={SURVEY_FORM}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 bg-sunset hover:bg-sunset-dark text-white font-semibold px-6 py-3 rounded-full transition-colors shadow-md"
+        >
+          📝 Submit this year's survey
+        </a>
+      </div>
     </section>
   )
 }

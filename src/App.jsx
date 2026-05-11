@@ -5,19 +5,7 @@ import BirthdayCalendar from './components/BirthdayCalendar'
 import SurveyDashboard from './components/SurveyDashboard'
 import PhotoGrid from './components/PhotoGrid'
 import localData from './data/data.json'
-
-const WORKER = import.meta.env.VITE_WORKER_URL
-
-async function workerFetch(endpoint) {
-  if (!WORKER) return null
-  try {
-    const res = await fetch(`${WORKER}/${endpoint}`)
-    if (!res.ok) throw new Error(res.statusText)
-    return await res.json()
-  } catch {
-    return null
-  }
-}
+import { fetchBirthdays, fetchSurveyQuotes } from './utils/sheets'
 
 export default function App() {
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem('cc_unlocked') === 'true')
@@ -26,13 +14,13 @@ export default function App() {
   useEffect(() => {
     if (!unlocked) return
     async function load() {
-      const [liveBirthdays, liveSurvey] = await Promise.all([
-        workerFetch('birthdays'),
-        workerFetch('survey_results'),
+      const [birthdays, quotes] = await Promise.all([
+        fetchBirthdays().catch(() => localData.birthdays),
+        fetchSurveyQuotes().catch(() => localData.survey.quotes),
       ])
       setData({
-        birthdays: liveBirthdays ?? localData.birthdays,
-        survey: liveSurvey ?? localData.survey,
+        birthdays,
+        survey: { quotes },
         photos: localData.photos,
         photoAlbums: localData.photoAlbums,
       })
