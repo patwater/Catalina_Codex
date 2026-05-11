@@ -16,14 +16,13 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-const BIRTHDAY_SHEET_ID = '1tCzlHN3dYyesQmR7IW8WGAIfa5jXlRS-YUIYjPknek8'
-const SURVEY_2022_ID = '1GA1JL1F64CcFGFvEaEr3lKmfvJ_QVxV67OVSEqq84ME'
-const SURVEY_2023_ID = '17-ftJaNzxw5Ry2EU9ao1sbgB5p_gLh1RhN9dO1IXOD0'
+// Published-to-web CSV URLs (File → Share → Publish to web → CSV)
+const BIRTHDAY_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7wHkBZRdyAf-3BrQVoWOzRpO77BDy3QB6b9j3Ex9HtDqc_E02CmXtpEa_b3i3YksnNWx1CLFgb8ZX/pub?output=csv'
+const SURVEY_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSiFzRN9_jJCPhybaFgrfbpYJ1lX1sBOmDKjHdzEbYdxxhQI5IMQFjA6_aCMgxfnlQZaOKYNCidxAy8/pub?output=csv'
 
-async function fetchSheet(sheetId, gid = '0') {
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Sheet fetch failed (${sheetId}): ${res.status}`)
+async function fetchCSV(url) {
+  const res = await fetch(url, { headers: { 'User-Agent': 'CatalinaCodexWorker/1.0' } })
+  if (!res.ok) throw new Error(`CSV fetch failed (${url}): ${res.status}`)
   return res.text()
 }
 
@@ -56,27 +55,33 @@ function parseCSVLine(line) {
   return result
 }
 
-function shapeBirthdays(rows) {
-  return rows
-    .filter((r) => r.Name && r.Date)
-    .map((r) => ({
-      name: r.Name,
-      date: r.Date,
-      emoji: r.Emoji || '🎂',
-    }))
+function findCol(row, candidates) {
+  for (const k of Object.keys(row)) {
+    if (candidates.some((c) => k.toLowerCase().includes(c.toLowerCase()))) return row[k]
+  }
+  return ''
 }
 
-function extractQuotes(rows, year) {
+function shapeBirthdays(rows) {
+  return rows
+    .map((r) => {
+      const name = findCol(r, ['name', 'full name', 'person'])
+      const date = findCol(r, ['date', 'birthday', 'dob', 'birth'])
+      const emoji = findCol(r, ['emoji', 'icon']) || '🎂'
+      return { name, date, emoji }
+    })
+    .filter((r) => r.name && r.date)
+}
+
+function extractQuotes(rows) {
   const quotes = []
   for (const row of rows) {
     for (const [key, val] of Object.entries(row)) {
       const lower = key.toLowerCase()
-      // Skip meta columns
       if (lower.includes('timestamp') || lower.includes('email') || lower === 'name') continue
       const text = val.trim()
-      // Only use freeform text responses (more than 15 chars, not a single word/number)
       if (text.length > 15 && /\s/.test(text)) {
-        quotes.push(`"${text}" — ${year}`)
+        quotes.push(`"${text}"`)
       }
     }
   }
@@ -106,24 +111,18 @@ export default {
       let data
 
       if (path === 'birthdays') {
-        const csv = await fetchSheet(BIRTHDAY_SHEET_ID)
+        const csv = await fetchCSV(BIRTHDAY_CSV)
         data = shapeBirthdays(csvToRows(csv))
 
       } else if (path === 'survey_results') {
-        const [csv2022, csv2023] = await Promise.all([
-          fetchSheet(SURVEY_2022_ID),
-          fetchSheet(SURVEY_2023_ID),
-        ])
-        const quotes = [
-          ...extractQuotes(csvToRows(csv2022), '2022'),
-          ...extractQuotes(csvToRows(csv2023), '2023'),
-        ]
+        const csv = await fetchCSV(SURVEY_CSV)
+        const quotes = extractQuotes(csvToRows(csv), '')
         data = { quotes }
 
       } else if (path === 'photos') {
-        const photosId = env.PHOTOS_SHEET_ID
-        if (!photosId) return Response.json({ error: 'PHOTOS_SHEET_ID not set' }, { status: 500, headers: CORS })
-        const csv = await fetchSheet(photosId)
+        const photosUrl = env.PHOTOS_CSV_URL
+        if (!photosUrl) return Response.json({ error: 'PHOTOS_CSV_URL not set' }, { status: 500, headers: CORS })
+        const csv = await fetchCSV(photosUrl)
         data = shapePhotos(csvToRows(csv))
 
       } else {
