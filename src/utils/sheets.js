@@ -50,25 +50,29 @@ export async function fetchBirthdays() {
   const rows = csvToRows(text)
   return rows
     .map((r) => ({
-      name: findCol(r, ['name', 'full name', 'person']),
-      date: findCol(r, ['date', 'birthday', 'dob', 'birth']),
-      emoji: findCol(r, ['emoji', 'icon']) || '🎂',
+      name: findCol(r, ['name', 'full name', 'person', 'who']),
+      date: findCol(r, ['date', 'birthday', 'dob', 'birth', 'born']),
+      emoji: findCol(r, ['emoji', 'icon', 'symbol']) || '🎂',
     }))
     .filter((r) => r.name && r.date)
 }
 
+// Returns { text, author } objects so the UI can show who said what.
 export async function fetchSurveyQuotes() {
   const text = await fetchCSV(SURVEY_CSV)
   const rows = csvToRows(text)
   const quotes = []
   for (const row of rows) {
+    const author = findCol(row, ['name', 'your name', 'first name', 'who are you', 'your first'])
     for (const [key, val] of Object.entries(row)) {
       const lower = key.toLowerCase()
       if (lower.includes('timestamp') || lower.includes('email')) continue
+      // Skip the name field itself so we don't quote someone's name back at them
+      if (lower === 'name' || lower === 'your name' || lower === 'first name') continue
       const cleaned = val.trim()
       // Only pick up freeform sentence-length answers, not single words/numbers
       if (cleaned.length > 20 && /\s/.test(cleaned)) {
-        quotes.push(`"${cleaned}"`)
+        quotes.push({ text: cleaned, author: author || null })
       }
     }
   }
