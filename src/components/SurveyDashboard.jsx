@@ -14,6 +14,10 @@ function WallOfQuotes({ quotes }) {
 
   if (!quotes.length) return null
 
+  const q = quotes[current]
+  const text = typeof q === 'string' ? q : q.text
+  const author = typeof q === 'string' ? null : q.author
+
   return (
     <div className="bg-gradient-to-br from-sunset/10 to-ocean/10 rounded-2xl p-8 md:p-12 shadow-md text-center flex flex-col items-center justify-center min-h-[200px]">
       <h2 className="section-title mb-8">💬 From the Crew</h2>
@@ -21,8 +25,13 @@ function WallOfQuotes({ quotes }) {
         key={current}
         className="font-handwritten text-2xl md:text-4xl text-gray-700 italic leading-relaxed max-w-3xl animate-[fadeIn_0.6s_ease-in]"
       >
-        {quotes[current]}
+        "{text}"
       </blockquote>
+      {author && (
+        <p key={`${current}-author`} className="mt-4 font-handwritten text-xl text-ocean animate-[fadeIn_0.6s_ease-in]">
+          — {author}
+        </p>
+      )}
       <div className="flex gap-2 mt-8">
         {quotes.map((_, i) => (
           <button

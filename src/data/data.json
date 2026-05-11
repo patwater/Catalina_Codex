@@ -13,14 +13,14 @@
   ],
   "survey": {
     "quotes": [
-      "\"The sunsets from the Isthmus never get old.\" — 2023",
-      "\"I didn't think I could eat three lobster tacos. I was wrong.\" — 2022",
-      "\"Best week of the year, every year.\" — 2023",
-      "\"Catalina cured my Monday.\" — 2022",
-      "\"The dolphins showed up right on cue. Magic.\" — 2023",
-      "\"I came for the camping. I stayed for the people.\" — 2022",
-      "\"No WiFi? No problem. Best sleep I've had all year.\" — 2023",
-      "\"Rich's stories are better than any podcast.\" — 2022"
+      { "text": "The sunsets from the Isthmus never get old.", "author": null },
+      { "text": "I didn't think I could eat three lobster tacos. I was wrong.", "author": null },
+      { "text": "Best week of the year, every year.", "author": null },
+      { "text": "Catalina cured my Monday.", "author": null },
+      { "text": "The dolphins showed up right on cue. Magic.", "author": null },
+      { "text": "I came for the camping. I stayed for the people.", "author": null },
+      { "text": "No WiFi? No problem. Best sleep I've had all year.", "author": null },
+      { "text": "Rich's stories are better than any podcast.", "author": null }
     ]
   },
   "photos": [
