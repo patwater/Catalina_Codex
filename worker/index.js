@@ -3,12 +3,11 @@
  * Proxies Google Sheets CSV data and formats it into clean JSON.
  *
  * Routes:
- *   GET /birthdays       → rows from the "Birthdays" sheet
- *   GET /survey_results  → rows from the "Survey" sheet
- *   GET /photos          → rows from the "Photos" sheet
+ *   GET /birthdays       → birthday list from the Birthdays sheet
+ *   GET /survey_results  → combined quotes from the 2022 + 2023 survey sheets
+ *   GET /photos          → photo list from a Photos sheet (optional, set PHOTOS_SHEET_ID)
  *
- * Set these secrets/vars in Cloudflare:
- *   SHEET_ID  – Google Sheets document ID
+ * Sheets must be shared "Anyone with the link can view" for the CSV export to work.
  */
 
 const CORS = {
@@ -17,60 +16,76 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-const GID = {
-  birthdays: '0',
-  survey_results: '1',
-  photos: '2',
-}
+// Published-to-web CSV URLs (File → Share → Publish to web → CSV)
+const BIRTHDAY_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7wHkBZRdyAf-3BrQVoWOzRpO77BDy3QB6b9j3Ex9HtDqc_E02CmXtpEa_b3i3YksnNWx1CLFgb8ZX/pub?output=csv'
+const SURVEY_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSiFzRN9_jJCPhybaFgrfbpYJ1lX1sBOmDKjHdzEbYdxxhQI5IMQFjA6_aCMgxfnlQZaOKYNCidxAy8/pub?output=csv'
 
-async function fetchSheet(sheetId, gid) {
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Sheet fetch failed: ${res.status}`)
+async function fetchCSV(url) {
+  const res = await fetch(url, { headers: { 'User-Agent': 'CatalinaCodexWorker/1.0' } })
+  if (!res.ok) throw new Error(`CSV fetch failed (${url}): ${res.status}`)
   return res.text()
 }
 
 function csvToRows(csv) {
   const lines = csv.trim().split('\n')
-  const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''))
+  if (lines.length < 2) return []
+  const headers = parseCSVLine(lines[0])
   return lines.slice(1).map((line) => {
-    const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''))
+    const values = parseCSVLine(line)
     return Object.fromEntries(headers.map((h, i) => [h, values[i] ?? '']))
   })
 }
 
-function shapeBirthdays(rows) {
-  return rows
-    .filter((r) => r.Name && r.Date)
-    .map((r) => ({
-      name: r.Name,
-      date: r.Date,
-      emoji: r.Emoji || '🎂',
-    }))
+function parseCSVLine(line) {
+  const result = []
+  let current = ''
+  let inQuotes = false
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (ch === '"') {
+      inQuotes = !inQuotes
+    } else if (ch === ',' && !inQuotes) {
+      result.push(current.trim())
+      current = ''
+    } else {
+      current += ch
+    }
+  }
+  result.push(current.trim())
+  return result
 }
 
-function shapeSurvey(rows) {
-  const favoriteMeal = {}
-  const mvp = {}
+function findCol(row, candidates) {
+  for (const k of Object.keys(row)) {
+    if (candidates.some((c) => k.toLowerCase().includes(c.toLowerCase()))) return row[k]
+  }
+  return ''
+}
+
+function shapeBirthdays(rows) {
+  return rows
+    .map((r) => {
+      const name = findCol(r, ['name', 'full name', 'person'])
+      const date = findCol(r, ['date', 'birthday', 'dob', 'birth'])
+      const emoji = findCol(r, ['emoji', 'icon']) || '🎂'
+      return { name, date, emoji }
+    })
+    .filter((r) => r.name && r.date)
+}
+
+function extractQuotes(rows) {
   const quotes = []
-
   for (const row of rows) {
-    if (row['Favorite Meal']) {
-      const meal = row['Favorite Meal'].trim()
-      favoriteMeal[meal] = (favoriteMeal[meal] || 0) + 1
+    for (const [key, val] of Object.entries(row)) {
+      const lower = key.toLowerCase()
+      if (lower.includes('timestamp') || lower.includes('email') || lower === 'name') continue
+      const text = val.trim()
+      if (text.length > 15 && /\s/.test(text)) {
+        quotes.push(`"${text}"`)
+      }
     }
-    if (row['MVP']) {
-      const m = row['MVP'].trim()
-      mvp[m] = (mvp[m] || 0) + 1
-    }
-    if (row['Quote']) quotes.push(`"${row['Quote'].trim()}" – Anonymous`)
   }
-
-  return {
-    favoriteMeal: Object.entries(favoriteMeal).map(([label, votes]) => ({ label, votes })),
-    mvp: Object.entries(mvp).map(([label, votes]) => ({ label, votes })),
-    quotes,
-  }
+  return quotes
 }
 
 function shapePhotos(rows) {
@@ -91,33 +106,31 @@ export default {
 
     const url = new URL(request.url)
     const path = url.pathname.replace(/^\//, '')
-    const sheetId = env.SHEET_ID
-
-    if (!sheetId) {
-      return Response.json({ error: 'SHEET_ID not configured' }, { status: 500, headers: CORS })
-    }
 
     try {
       let data
 
       if (path === 'birthdays') {
-        const csv = await fetchSheet(sheetId, GID.birthdays)
+        const csv = await fetchCSV(BIRTHDAY_CSV)
         data = shapeBirthdays(csvToRows(csv))
+
       } else if (path === 'survey_results') {
-        const csv = await fetchSheet(sheetId, GID.survey_results)
-        data = shapeSurvey(csvToRows(csv))
+        const csv = await fetchCSV(SURVEY_CSV)
+        const quotes = extractQuotes(csvToRows(csv), '')
+        data = { quotes }
+
       } else if (path === 'photos') {
-        const csv = await fetchSheet(sheetId, GID.photos)
+        const photosUrl = env.PHOTOS_CSV_URL
+        if (!photosUrl) return Response.json({ error: 'PHOTOS_CSV_URL not set' }, { status: 500, headers: CORS })
+        const csv = await fetchCSV(photosUrl)
         data = shapePhotos(csvToRows(csv))
+
       } else {
         return Response.json({ error: 'Not found' }, { status: 404, headers: CORS })
       }
 
       return Response.json(data, {
-        headers: {
-          ...CORS,
-          'Cache-Control': 'public, max-age=300',
-        },
+        headers: { ...CORS, 'Cache-Control': 'public, max-age=300' },
       })
     } catch (err) {
       return Response.json({ error: err.message }, { status: 500, headers: CORS })

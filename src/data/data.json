@@ -12,77 +12,25 @@
     { "name": "Ben", "date": "1987-04-08", "emoji": "🦀" }
   ],
   "survey": {
-    "favoriteMeal": [
-      { "label": "Lobster Tacos", "votes": 12 },
-      { "label": "Camp Chili", "votes": 9 },
-      { "label": "Sunrise Pancakes", "votes": 7 },
-      { "label": "Fish & Chips", "votes": 11 },
-      { "label": "S'mores", "votes": 15 }
-    ],
-    "mvp": [
-      { "label": "Rich", "votes": 18 },
-      { "label": "Pat", "votes": 7 },
-      { "label": "Mike", "votes": 5 },
-      { "label": "Sarah", "votes": 8 },
-      { "label": "Emma", "votes": 4 }
-    ],
     "quotes": [
-      "\"The sunsets from the Isthmus never get old.\" – Anonymous",
-      "\"I didn't think I could eat three lobster tacos. I was wrong.\" – Anonymous",
-      "\"Best week of the year, every year.\" – Anonymous",
-      "\"Catalina cured my Monday.\" – Anonymous",
-      "\"The dolphins showed up right on cue. Magic.\" – Anonymous",
-      "\"I came for the camping. I stayed for the people.\" – Anonymous",
-      "\"No WiFi? No problem. Best sleep I've had all year.\" – Anonymous",
-      "\"Rich's stories are better than any podcast.\" – Anonymous"
+      "\"The sunsets from the Isthmus never get old.\" — 2023",
+      "\"I didn't think I could eat three lobster tacos. I was wrong.\" — 2022",
+      "\"Best week of the year, every year.\" — 2023",
+      "\"Catalina cured my Monday.\" — 2022",
+      "\"The dolphins showed up right on cue. Magic.\" — 2023",
+      "\"I came for the camping. I stayed for the people.\" — 2022",
+      "\"No WiFi? No problem. Best sleep I've had all year.\" — 2023",
+      "\"Rich's stories are better than any podcast.\" — 2022"
     ]
   },
   "photos": [
-    {
-      "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600",
-      "caption": "Sunset at the Isthmus",
-      "year": 2024
-    },
-    {
-      "url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600",
-      "caption": "Morning on the beach",
-      "year": 2024
-    },
-    {
-      "url": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400",
-      "caption": "Clear blue waters",
-      "year": 2023
-    },
-    {
-      "url": "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=500",
-      "caption": "Camp life",
-      "year": 2023
-    },
-    {
-      "url": "https://images.unsplash.com/photo-1520116468816-95b69f847357?w=600",
-      "caption": "Starry nights",
-      "year": 2022
-    },
-    {
-      "url": "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=500",
-      "caption": "Family time",
-      "year": 2022
-    },
-    {
-      "url": "https://images.unsplash.com/photo-1530053969600-caed2596d242?w=400",
-      "caption": "Island views",
-      "year": 2021
-    },
-    {
-      "url": "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?w=600",
-      "caption": "Wave watching",
-      "year": 2021
-    },
-    {
-      "url": "https://images.unsplash.com/photo-1473177104440-ffee2f376098?w=500",
-      "caption": "Golden hour",
-      "year": 2019
-    }
+    { "url": "/photos/groupPhoto_1.jpg",                              "caption": "The whole crew",          "year": 2021 },
+    { "url": "/photos/2021 group.jpg",                                "caption": "Group shot",              "year": 2021 },
+    { "url": "/photos/20210702115408CatalinaByMavicDJI_0011.jpg",     "caption": "Catalina from above",     "year": 2021 },
+    { "url": "/photos/20210705154617untitled shoot_ALS6131.jpg",      "caption": "Camp life",               "year": 2021 },
+    { "url": "/photos/IMG_2270.jpg",                                  "caption": "Island vibes",            "year": 2021 },
+    { "url": "/photos/IMG_2275.jpg",                                  "caption": "On the water",            "year": 2021 },
+    { "url": "/photos/084.JPG",                                       "caption": "Catalina memories",       "year": 2021 }
   ],
   "photoAlbums": [
     { "year": 2025, "url": "https://photos.google.com/share/AF1QipM8BtwqXVfgfuLhjb3ljplgkcfr7hriwDHfx9hdUE6ZDZLlMNNc2ARA32ASozc10A?key=UHJkX1hDS056VVlUSHVTdFl1OUlpT1FEY3V6RlBB" },

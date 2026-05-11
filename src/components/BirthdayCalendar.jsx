@@ -59,12 +59,29 @@ export default function BirthdayCalendar({ birthdays }) {
 
       {/* All birthdays */}
       <h3 className="font-handwritten text-2xl text-gray-600 mb-4">All Birthdays</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
         {[...birthdays]
           .sort((a, b) => daysUntil(a.date) - daysUntil(b.date))
           .map((b) => (
             <BirthdayCard key={b.name} {...b} />
           ))}
+      </div>
+
+      {/* Pop's 70th */}
+      <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-amber-200 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-5 shadow-md">
+        <span className="text-5xl">📖</span>
+        <div className="flex-1 text-center sm:text-left">
+          <h3 className="font-handwritten text-2xl text-amber-800">Rich's 70th Birthday Book</h3>
+          <p className="text-amber-700 text-sm mt-1">A keepsake from the big celebration</p>
+        </div>
+        <a
+          href="https://www.dropbox.com/preview/personal/Pics/Dad%2070th/pics%20for%20martha%20stuff/Dad%2070th%20(8%20%C3%97%2010%20in).pdf?role=personal"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-5 py-2.5 rounded-full transition-colors text-sm"
+        >
+          View the Book →
+        </a>
       </div>
     </section>
   )
