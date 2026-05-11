@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react'
 import BirthdayCard from './BirthdayCard'
 
 function daysUntil(dateStr) {
@@ -9,14 +10,126 @@ function daysUntil(dateStr) {
   return diff === 365 ? 0 : diff
 }
 
+function getSeason(month) {
+  if (month <= 1 || month === 11) return { label: 'Winter', emoji: '❄️' }
+  if (month <= 4) return { label: 'Spring', emoji: '🌸' }
+  if (month <= 7) return { label: 'Summer', emoji: '☀️' }
+  return { label: 'Fall', emoji: '🍂' }
+}
+
+function getMonthName(month) {
+  return new Date(2000, month, 1).toLocaleDateString('en-US', { month: 'long' })
+}
+
 function getThisMonthBirthdays(birthdays) {
   const month = new Date().getMonth()
   return birthdays.filter((b) => new Date(b.date).getMonth() === month)
 }
 
 function getNextBirthday(birthdays) {
-  const sorted = [...birthdays].sort((a, b) => daysUntil(a.date) - daysUntil(b.date))
-  return sorted[0]
+  return [...birthdays].sort((a, b) => daysUntil(a.date) - daysUntil(b.date))[0]
+}
+
+function BirthdayTable({ birthdays }) {
+  const [query, setQuery] = useState('')
+
+  const rows = useMemo(() => {
+    return [...birthdays]
+      .map((b) => {
+        const d = new Date(b.date)
+        const month = d.getMonth()
+        const season = getSeason(month)
+        return {
+          ...b,
+          month,
+          monthName: getMonthName(month),
+          day: d.getDate(),
+          season: season.label,
+          seasonEmoji: season.emoji,
+          daysAway: daysUntil(b.date),
+        }
+      })
+      .sort((a, b) => a.daysAway - b.daysAway)
+  }, [birthdays])
+
+  const filtered = useMemo(() => {
+    const q = query.toLowerCase().trim()
+    if (!q) return rows
+    return rows.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.monthName.toLowerCase().includes(q) ||
+        r.season.toLowerCase().includes(q)
+    )
+  }, [rows, query])
+
+  return (
+    <div>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+        <h3 className="font-handwritten text-2xl text-gray-600 flex-1">All Birthdays</h3>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by name, month, or season…"
+          className="w-full sm:w-72 px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:border-ocean transition-colors"
+        />
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-ocean/5 border-b border-gray-100 text-left">
+              <th className="px-4 py-3 font-semibold text-gray-500 uppercase tracking-wide text-xs">Name</th>
+              <th className="px-4 py-3 font-semibold text-gray-500 uppercase tracking-wide text-xs">Season</th>
+              <th className="px-4 py-3 font-semibold text-gray-500 uppercase tracking-wide text-xs">Month</th>
+              <th className="px-4 py-3 font-semibold text-gray-500 uppercase tracking-wide text-xs">Day</th>
+              <th className="px-4 py-3 font-semibold text-gray-500 uppercase tracking-wide text-xs hidden sm:table-cell">Coming Up</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-gray-400 font-handwritten text-lg">
+                  No birthdays match "{query}"
+                </td>
+              </tr>
+            )}
+            {filtered.map((r, i) => (
+              <tr
+                key={r.name}
+                className={`border-b border-gray-50 hover:bg-ocean/5 transition-colors ${
+                  i % 2 === 0 ? '' : 'bg-gray-50/50'
+                }`}
+              >
+                <td className="px-4 py-3 font-medium text-gray-800">
+                  <span className="mr-2">{r.emoji}</span>
+                  {r.name}
+                </td>
+                <td className="px-4 py-3 text-gray-600">
+                  <span className="mr-1">{r.seasonEmoji}</span>
+                  {r.season}
+                </td>
+                <td className="px-4 py-3 text-gray-600">{r.monthName}</td>
+                <td className="px-4 py-3 text-gray-600">{r.day}</td>
+                <td className="px-4 py-3 hidden sm:table-cell">
+                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                    r.daysAway === 0
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : r.daysAway <= 30
+                      ? 'bg-sunset/10 text-sunset-dark'
+                      : 'bg-gray-100 text-gray-500'
+                  }`}>
+                    {r.daysAway === 0 ? '🎉 Today!' : `${r.daysAway}d`}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 }
 
 export default function BirthdayCalendar({ birthdays }) {
@@ -43,7 +156,7 @@ export default function BirthdayCalendar({ birthdays }) {
         </div>
       </div>
 
-      {/* This month */}
+      {/* This month cards */}
       {thisMonth.length > 0 ? (
         <>
           <h3 className="font-handwritten text-2xl text-gray-600 mb-4">{currentMonthName} Birthdays</h3>
@@ -57,14 +170,9 @@ export default function BirthdayCalendar({ birthdays }) {
         <p className="font-handwritten text-xl text-gray-400 mb-8">No birthdays this month — enjoy the calm! 🌊</p>
       )}
 
-      {/* All birthdays */}
-      <h3 className="font-handwritten text-2xl text-gray-600 mb-4">All Birthdays</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
-        {[...birthdays]
-          .sort((a, b) => daysUntil(a.date) - daysUntil(b.date))
-          .map((b) => (
-            <BirthdayCard key={b.name} {...b} />
-          ))}
+      {/* Searchable table */}
+      <div className="mb-10">
+        <BirthdayTable birthdays={birthdays} />
       </div>
 
       {/* Pop's 70th */}
