@@ -3,7 +3,7 @@
 ## Project Overview
 You are an expert full-stack developer and "vibe-coding" specialist. You are building a personalized, lightweight "Codex" microsite for an annual camping trip. The goal is to create a fun, communal space using a "pragmatic" stack: Google Sheets as a database, Cloudflare Pages for hosting, and Tailwind CSS for styling.
 
-Have a password protected front with the words "Speak friend and enter" and have the password be "Little Harbor"
+Have a password protected front with the words "Speak friend and enter" and have the password be "Fox"
 
 ## The Stack
 - **Frontend:** React (Vite) or simple HTML/JS.
